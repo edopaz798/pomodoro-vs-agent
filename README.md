@@ -18,6 +18,13 @@ npm run build
 npm run preview
 ```
 
+## Deploy (Unraid / NPM)
+
+Static site on Unraid behind Nginx Proxy Manager:
+
+- **Demo URL:** `http://stack-rush.local.edopaz.com`
+- See **[DEPLOY.md](./DEPLOY.md)** for Dockerfile/compose, rebuild (`git pull` + `docker compose up -d --build`), and NPM proxy fields.
+
 ## How to play
 
 1. **Start wait** → pick a pack (Short / Medium / Long) and optional task label → **Go**
