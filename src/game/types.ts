@@ -10,6 +10,8 @@ export interface Pack {
   id: PackId
   label: string
   description: string
+  /** Which kind of agent task this pack roughly fits */
+  fit: string
   rows: number
   cols: number
   colors: number
@@ -44,10 +46,19 @@ export const STORAGE_KEY = 'pomodoro-vs-agent:v1'
 export const TIE_WINDOW_MS = 1000
 export const COOLDOWN_MS = 3000
 
+export const STATS_KEY = 'pomodoro-vs-agent:stats:v1'
+
+export interface RaceStats {
+  player: number
+  agent: number
+  /** resolvedAt of the last counted race, so refreshes don't double count */
+  lastResolvedAt: number | null
+}
+
 export const COLOR_PALETTE = [
-  '#ff6b6b',
-  '#4ecdc4',
-  '#ffe66d',
-  '#a78bfa',
-  '#74b9ff',
+  '#fb7185',
+  '#fbbf24',
+  '#38bdf8',
+  '#a3e635',
+  '#f0abfc',
 ] as const

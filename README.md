@@ -27,12 +27,14 @@ Static site on Unraid behind Nginx Proxy Manager:
 
 ## How to play
 
-1. **Start wait** → pick a pack (Short / Medium / Long) and optional task label → **Go**
+1. **Start wait** → pick a pack (Short / Medium / Long) and optional task label → **Go — start both clocks**
 2. Both clocks start. Clear groups of **2+ same-color** orthogonally connected tiles.
-3. Gravity drops tiles down; empty columns pack left. When no 2+ groups remain, leftover tiles auto-clear and your clock stops — no **I cleared it** tap.
-4. Hit **Agent done** when your agent finishes (honor system in V1).
-5. First finish wins. Within **1 second** → agent wins. **Exit** mid-race → agent wins (forfeit).
-6. **Pause** freezes only your clock.
+3. Gravity drops tiles down; empty columns pack left. When no 2+ groups remain, leftover tiles auto-clear and your clock stops.
+4. Hit **Agent done** (`A` on desktop) when your agent finishes (honor system in V1).
+5. First finish wins. Within **1 second** → agent wins. **Give up** (tap twice) mid-race → agent wins (forfeit).
+6. **Pause** (`P`) freezes only your clock.
+
+Your win/loss record is kept in `localStorage`; reset it from the start screen.
 
 ### Packs
 

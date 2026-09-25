@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import {
   clearGroup,
   createBoard,
@@ -9,12 +9,20 @@ import {
 } from '../game/board'
 import { PACKS } from '../game/packs'
 import { decideWinner } from '../game/resolve'
-import { clearSnapshot, loadSnapshot, saveSnapshot } from '../game/storage'
+import {
+  EMPTY_STATS,
+  clearSnapshot,
+  loadSnapshot,
+  loadStats,
+  saveSnapshot,
+  saveStats,
+} from '../game/storage'
 import {
   COOLDOWN_MS,
   type Board,
   type PackId,
   type RaceSnapshot,
+  type RaceStats,
 } from '../game/types'
 
 function initialIdle(): RaceSnapshot {
@@ -298,12 +306,33 @@ function reducer(state: RaceSnapshot, action: Action): RaceSnapshot {
 
 export function useRace() {
   const [state, dispatch] = useReducer(reducer, undefined, hydrate)
+  const [restored] = useState(() => state.phase === 'racing' || state.phase === 'paused')
+  const [stats, setStats] = useState<RaceStats>(loadStats)
   const stateRef = useRef(state)
   stateRef.current = state
 
   useEffect(() => {
     saveSnapshot(state)
   }, [state])
+
+  if (
+    state.phase === 'resolved' &&
+    state.winner &&
+    state.resolvedAt !== null &&
+    stats.lastResolvedAt !== state.resolvedAt
+  ) {
+    setStats({
+      player: stats.player + (state.winner === 'player' ? 1 : 0),
+      agent: stats.agent + (state.winner === 'agent' ? 1 : 0),
+      lastResolvedAt: state.resolvedAt,
+    })
+  }
+
+  useEffect(() => {
+    saveStats(stats)
+  }, [stats])
+
+  const resetStats = useCallback(() => setStats(EMPTY_STATS), [])
 
   useEffect(() => {
     if (state.phase !== 'cooldown') return
@@ -331,5 +360,5 @@ export function useRace() {
     return now - s.raceStartedAt
   }, [])
 
-  return { state, dispatch, getPlayerElapsed, getAgentElapsed }
+  return { state, dispatch, getPlayerElapsed, getAgentElapsed, stats, resetStats, restored }
 }
