@@ -22,7 +22,7 @@ interface RacingScreenProps {
 type Tone = 'info' | 'you' | 'agent' | 'warn'
 
 const BASE_TITLE = 'Pomodoro vs Agent · Stack Rush'
-const CONFIRM_MS = 3000
+const CONFIRM_MS = 4000
 const FLASH_MS = 2500
 
 function useFlash(trigger: unknown, initial: boolean): boolean {
@@ -203,7 +203,7 @@ export function RacingScreen({
             )}
             {playerDone && (
               <div className="board-overlay board-overlay--done">
-                <p className="board-overlay__title">Board cleared</p>
+                <p className="board-overlay__title">Clock stopped</p>
                 <p className="board-overlay__body">{formatMs(playerMs)}</p>
               </div>
             )}

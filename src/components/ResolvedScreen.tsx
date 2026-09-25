@@ -9,7 +9,7 @@ interface ResolvedScreenProps {
   onDone: () => void
 }
 
-const PAUSE_NOTE_MIN_MS = 500
+const PAUSE_NOTE_MIN_MS = 100
 
 export function ResolvedScreen({ state, stats, onRematch, onDone }: ResolvedScreenProps) {
   const youWin = state.winner === 'player'
@@ -35,7 +35,7 @@ export function ResolvedScreen({ state, stats, onRematch, onDone }: ResolvedScre
     title = 'Agent wins'
     detail = 'Giving up mid-race counts as a win for the agent.'
   } else if (youWin) {
-    eyebrow = 'Board cleared first'
+    eyebrow = 'You finished first'
     title = 'You beat the agent'
     detail = margin !== null ? `You finished ${formatMs(margin)} ahead.` : 'Nice clear.'
   } else if (photoFinish) {
