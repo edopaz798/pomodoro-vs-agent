@@ -1,0 +1,26 @@
+# Stack Rush (pomodoro-vs-agent) — static Vite SPA behind Nginx Proxy Manager.
+# Unraid path: /mnt/user/appdata/stack-rush
+services:
+  stack-rush-web:
+    build: .
+    image: stack-rush:web
+    container_name: stack-rush-web
+    # Optional LAN smoke port; NPM reaches via container DNS on `internal`.
+    ports:
+      - "${STACK_RUSH_PORT:-43180}:80"
+    networks:
+      - default
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+networks:
+  # NPM / Unraid reverse-proxy DNS (same as live-paper-desk / cuentos-noche)
+  internal:
+    external: true
+    name: ${NPM_INTERNAL_NETWORK:-internal}
