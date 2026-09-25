@@ -45,7 +45,6 @@ export default function App() {
             getPlayerElapsed={getPlayerElapsed}
             getAgentElapsed={getAgentElapsed}
             onTap={(row, col) => dispatch({ type: 'TAP', row, col })}
-            onPlayerCleared={() => dispatch({ type: 'PLAYER_CLEARED' })}
             onAgentDone={() => dispatch({ type: 'AGENT_DONE' })}
             onPause={() => dispatch({ type: 'PAUSE' })}
             onResume={() => dispatch({ type: 'RESUME' })}

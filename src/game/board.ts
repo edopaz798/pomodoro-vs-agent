@@ -3,10 +3,25 @@ import type { Board, Cell, Pack } from './types'
 /** Create a fresh random board for a pack. Avoids all-isolated tiles when possible. */
 export function createBoard(pack: Pack, rng: () => number = Math.random): Board {
   const { rows, cols, colors } = pack
-  const board: Board = Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => Math.floor(rng() * colors)),
-  )
+  const fill = (): Board =>
+    Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => Math.floor(rng() * colors)),
+    )
+
+  let board = fill()
+  for (let attempt = 0; attempt < 20 && !hasMoves(board); attempt++) {
+    board = fill()
+  }
   return board
+}
+
+export function emptyBoard(board: Board): Board {
+  return board.map((row) => row.map(() => null))
+}
+
+/** True when the board is fully clear, or only isolated tiles remain. */
+export function isBoardSettled(board: Board): boolean {
+  return isBoardEmpty(board) || !hasMoves(board)
 }
 
 export function cloneBoard(board: Board): Board {

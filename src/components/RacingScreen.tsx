@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { hasMoves } from '../game/board'
 import { PACKS } from '../game/packs'
 import { formatMs } from '../game/resolve'
 import type { RaceSnapshot } from '../game/types'
@@ -12,7 +11,6 @@ interface RacingScreenProps {
   getPlayerElapsed: (now?: number) => number
   getAgentElapsed: (now?: number) => number
   onTap: (row: number, col: number) => void
-  onPlayerCleared: () => void
   onAgentDone: () => void
   onPause: () => void
   onResume: () => void
@@ -47,7 +45,6 @@ export function RacingScreen({
   getPlayerElapsed,
   getAgentElapsed,
   onTap,
-  onPlayerCleared,
   onAgentDone,
   onPause,
   onResume,
@@ -117,7 +114,6 @@ export function RacingScreen({
     ? totalTiles
     : (state.round - 1) * tilesPerBoard + (tilesPerBoard - tilesLeft)
   const progress = Math.round((cleared / totalTiles) * 100)
-  const stuck = !playerDone && tilesLeft > 0 && !hasMoves(state.board)
 
   let tone: Tone = 'info'
   let message: string
@@ -127,9 +123,6 @@ export function RacingScreen({
   } else if (agentDone && !playerDone) {
     tone = 'agent'
     message = 'The agent finished first and takes this round. Finish your board to see the result.'
-  } else if (stuck) {
-    tone = 'warn'
-    message = 'No moves left. Tap Stop my clock to lock in your time.'
   } else if (showNewRound) {
     tone = 'you'
     message = `Board ${state.round - 1} cleared, ${pack.rounds - state.round + 1} to go.`
@@ -203,7 +196,7 @@ export function RacingScreen({
             )}
             {playerDone && (
               <div className="board-overlay board-overlay--done">
-                <p className="board-overlay__title">Clock stopped</p>
+                <p className="board-overlay__title">Board cleared</p>
                 <p className="board-overlay__body">{formatMs(playerMs)}</p>
               </div>
             )}
@@ -235,36 +228,25 @@ export function RacingScreen({
             {agentDone ? 'Agent finished ✓' : 'Agent done'}
             <kbd>A</kbd>
           </button>
-          <div className="race-actions__row">
-            {!paused ? (
-              <button
-                type="button"
-                className="btn btn--secondary"
-                onClick={onPause}
-                disabled={playerDone}
-              >
-                Pause
-                <kbd>P</kbd>
-              </button>
-            ) : (
-              <button type="button" className="btn btn--secondary" onClick={onResume}>
-                Resume
-                <kbd>P</kbd>
-              </button>
-            )}
+          {!paused ? (
             <button
               type="button"
-              className={`btn ${stuck ? 'btn--warn' : 'btn--quiet'}`}
-              onClick={onPlayerCleared}
+              className="btn btn--secondary"
+              onClick={onPause}
               disabled={playerDone}
-              title="Stops your clock now, as if you cleared the board"
             >
-              Stop my clock
+              Pause
+              <kbd>P</kbd>
             </button>
-          </div>
+          ) : (
+            <button type="button" className="btn btn--secondary" onClick={onResume}>
+              Resume
+              <kbd>P</kbd>
+            </button>
+          )}
           <p className="hint hint--left">
-            Honor system: tap <strong>Agent done</strong> the moment Cursor finishes. Pause only
-            freezes your clock.
+            Honor system: tap <strong>Agent done</strong> the moment Cursor finishes. Leftover
+            singles auto-clear when no groups remain.
           </p>
         </div>
       </div>

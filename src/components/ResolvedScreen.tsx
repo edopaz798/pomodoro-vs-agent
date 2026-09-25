@@ -35,7 +35,7 @@ export function ResolvedScreen({ state, stats, onRematch, onDone }: ResolvedScre
     title = 'Agent wins'
     detail = 'Giving up mid-race counts as a win for the agent.'
   } else if (youWin) {
-    eyebrow = 'You finished first'
+    eyebrow = 'Board cleared first'
     title = 'You beat the agent'
     detail = margin !== null ? `You finished ${formatMs(margin)} ahead.` : 'Nice clear.'
   } else if (photoFinish) {
