@@ -9,7 +9,6 @@ interface RacingScreenProps {
   getPlayerElapsed: (now?: number) => number
   getAgentElapsed: (now?: number) => number
   onTap: (row: number, col: number) => void
-  onPlayerCleared: () => void
   onAgentDone: () => void
   onPause: () => void
   onResume: () => void
@@ -21,7 +20,6 @@ export function RacingScreen({
   getPlayerElapsed,
   getAgentElapsed,
   onTap,
-  onPlayerCleared,
   onAgentDone,
   onPause,
   onResume,
@@ -98,14 +96,6 @@ export function RacingScreen({
         )}
         <button
           type="button"
-          className="btn btn--ghost"
-          onClick={onPlayerCleared}
-          disabled={playerDone}
-        >
-          I cleared it
-        </button>
-        <button
-          type="button"
           className="btn btn--agent"
           onClick={onAgentDone}
           disabled={agentDone}
@@ -115,8 +105,9 @@ export function RacingScreen({
       </div>
 
       <p className="hint">
-        Tap groups of 2+ same-color tiles. Agent done is honor-system — hit it when
-        the agent finishes.
+        Tap groups of 2+ same-color tiles. Leftover singles auto-clear when no
+        groups remain. Agent done is honor-system — hit it when the agent
+        finishes.
       </p>
     </section>
   )

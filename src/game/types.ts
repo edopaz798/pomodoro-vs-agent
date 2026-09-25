@@ -24,7 +24,7 @@ export interface RaceSnapshot {
   round: number
   /** Wall-clock ms when race started (Go pressed) */
   raceStartedAt: number | null
-  /** Player wall-clock finish (board cleared) */
+  /** Player wall-clock finish (board settled: empty or leftover singles only) */
   playerFinishedAt: number | null
   /** Agent wall-clock finish (honor-system button) */
   agentFinishedAt: number | null

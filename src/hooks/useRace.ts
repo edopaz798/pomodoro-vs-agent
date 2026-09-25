@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
-import { clearGroup, createBoard, findGroup, isBoardEmpty } from '../game/board'
+import {
+  clearGroup,
+  createBoard,
+  emptyBoard,
+  findGroup,
+  isBoardEmpty,
+  isBoardSettled,
+} from '../game/board'
 import { PACKS } from '../game/packs'
 import { decideWinner } from '../game/resolve'
 import { clearSnapshot, loadSnapshot, saveSnapshot } from '../game/storage'
 import {
   COOLDOWN_MS,
+  type Board,
   type PackId,
   type RaceSnapshot,
 } from '../game/types'
@@ -74,6 +82,34 @@ function livePlayerElapsed(state: RaceSnapshot, now: number): number {
   return state.playerElapsedMs
 }
 
+function finishCurrentBoard(state: RaceSnapshot, now: number, board: Board): RaceSnapshot {
+  const pack = PACKS[state.packId]
+  const cleaned = isBoardEmpty(board) ? board : emptyBoard(board)
+
+  if (state.round < pack.rounds) {
+    return {
+      ...state,
+      board: createBoard(pack),
+      round: state.round + 1,
+    }
+  }
+
+  const elapsed = livePlayerElapsed(state, now)
+  const withPlayer: RaceSnapshot = {
+    ...state,
+    board: cleaned,
+    playerFinishedAt: now,
+    playerElapsedMs: elapsed,
+    runSegmentStartedAt: null,
+    playerTimeMs: elapsed,
+  }
+
+  if (withPlayer.agentFinishedAt !== null) {
+    return resolveRace(withPlayer, now)
+  }
+  return withPlayer
+}
+
 function resolveRace(state: RaceSnapshot, now: number): RaceSnapshot {
   const winner = decideWinner(state.playerFinishedAt, state.agentFinishedAt)
   const playerTimeMs =
@@ -104,7 +140,7 @@ type Action =
   | { type: 'SET_TASK'; taskLabel: string }
   | { type: 'GO' }
   | { type: 'TAP'; row: number; col: number }
-  | { type: 'PLAYER_CLEARED' }
+  | { type: 'SETTLE_BOARD' }
   | { type: 'AGENT_DONE' }
   | { type: 'PAUSE' }
   | { type: 'RESUME' }
@@ -159,54 +195,18 @@ function reducer(state: RaceSnapshot, action: Action): RaceSnapshot {
       if (group.length < 2) return state
 
       const nextBoard = clearGroup(state.board, group)
-      if (!isBoardEmpty(nextBoard)) {
+      if (!isBoardSettled(nextBoard)) {
         return { ...state, board: nextBoard }
       }
 
-      const pack = PACKS[state.packId]
-      if (state.round < pack.rounds) {
-        return {
-          ...state,
-          board: createBoard(pack),
-          round: state.round + 1,
-        }
-      }
-
-      const elapsed = livePlayerElapsed(state, now)
-      const withPlayer: RaceSnapshot = {
-        ...state,
-        board: nextBoard,
-        playerFinishedAt: now,
-        playerElapsedMs: elapsed,
-        runSegmentStartedAt: null,
-        playerTimeMs: elapsed,
-      }
-
-      if (withPlayer.agentFinishedAt !== null) {
-        return resolveRace(withPlayer, now)
-      }
-      return withPlayer
+      return finishCurrentBoard(state, now, nextBoard)
     }
 
-    case 'PLAYER_CLEARED': {
-      if (state.phase !== 'racing' && state.phase !== 'paused') return state
+    case 'SETTLE_BOARD': {
+      if (state.phase !== 'racing') return state
       if (state.playerFinishedAt !== null) return state
-
-      const elapsed = livePlayerElapsed(state, now)
-      const withPlayer: RaceSnapshot = {
-        ...state,
-        phase: 'racing',
-        pauseStartedAt: null,
-        playerFinishedAt: now,
-        playerElapsedMs: elapsed,
-        runSegmentStartedAt: null,
-        playerTimeMs: elapsed,
-      }
-
-      if (withPlayer.agentFinishedAt !== null) {
-        return resolveRace(withPlayer, now)
-      }
-      return withPlayer
+      if (!isBoardSettled(state.board)) return state
+      return finishCurrentBoard(state, now, state.board)
     }
 
     case 'AGENT_DONE': {
@@ -310,6 +310,14 @@ export function useRace() {
     const id = window.setInterval(() => dispatch({ type: 'COOLDOWN_TICK' }), 200)
     return () => clearInterval(id)
   }, [state.phase])
+
+  useEffect(() => {
+    if (state.phase !== 'racing') return
+    if (state.playerFinishedAt !== null) return
+    if (!state.board.length) return
+    if (!isBoardSettled(state.board)) return
+    dispatch({ type: 'SETTLE_BOARD' })
+  }, [state.phase, state.playerFinishedAt, state.board])
 
   const getPlayerElapsed = useCallback(
     (now = Date.now()) => livePlayerElapsed(stateRef.current, now),
